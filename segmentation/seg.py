@@ -78,8 +78,7 @@ class Segmenter:
                 break
             fr = min(fl + self.word_max_len, br if back_stop else l)
             bl = max(br - self.word_max_len, fl if front_stop else 0)
-            front_word = None
-            back_word = None
+            front_word, back_word = '', ''
             while not front_stop and fr > fl:
                 if text[fl:fr] in self.lexicon:
                     front_word = text[fl:fr]
@@ -92,32 +91,23 @@ class Segmenter:
                     break
                 else:
                     bl += 1
-            if front_word and back_word:
-                if fr <= bl:
-                    front_result.append(front_word)
-                    back_result.append(back_word)
-                    fl, br = fr, bl
-                else:
-                    if len(front_word) >= len(back_word):
-                        back_stop = True
-                        front_result.append(front_word)
-                        fl = fr
-                        while fr > br and back_result:
-                            br += len(back_result.pop())
-                    else:
-                        front_stop = True
-                        back_result.append(back_word)
-                        br = bl
-                        while bl < fl and front_result:
-                            fl -= len(front_result.pop())
-            elif front_word:
+            if front_word and back_word and fr <= bl:
                 front_result.append(front_word)
-                fl = fr
-                back_stop = True
-            elif back_word:
                 back_result.append(back_word)
-                br = bl
-                front_stop = True
+                fl, br = fr, bl
+            elif front_word or back_word:
+                if len(front_word) > len(back_word):
+                    front_result.append(front_word)
+                    fl = fr
+                    back_stop = True
+                    while fr > br and back_result:
+                        br += len(back_result.pop())
+                else:
+                    back_result.append(back_word)
+                    br = bl
+                    front_stop = True
+                    while bl < fl and front_result:
+                        fl -= len(front_result.pop())
             else:
                 front_result.append(text[fl:br])
                 fl = br
@@ -228,7 +218,7 @@ def gzopen(filename, mode):
 
 def split_tokens(lexicon, refer_words, low_limit):
     """
-    Split tokens into common words, return split result dict
+    Split some strange combine tokens into common words, return split result dict
 
     :param lexicon: The lexicon used to segement the token
     :param refer_words: Refer words used to split wokens
@@ -262,7 +252,7 @@ if __name__ == '__main__':
                            type=str, required=False)
     argparser.add_argument("--bk", help="Use back max match", action='store_true')
     argparser.add_argument("--fb", help="Use frontback max match", action='store_true')
-    argparser.add_argument("--ew", help="Use extra words", action='store_true')
+    argparser.add_argument("--ew", help="Add extra words", action='store_true')
     argparser.add_argument("--sw", help="Short word check", action='store_true')
     argparser.add_argument("--st", help="Split combine tokens", action='store_true')
     args = argparser.parse_args()
@@ -273,7 +263,7 @@ if __name__ == '__main__':
     with gzopen(args.lexicon, 'r') as f1, gzopen(args.target, 'r') as f2, open(args.output, 'w') as f3:
         lex = [clean_input(line).split('\t')[0] for line in f1][:args.limit]
         segmenter = Segmenter(lex,
-                              split_words=split_tokens(lex, lex[:250], 20000) if args.st else None,
+                              split_words=split_tokens(lex, lex[:50], 20000) if args.st else None,
                               extra_words=missing_words if args.ew else None,
                               short_words=common_short_words(lex, 2, 200) if args.sw else None)
 
