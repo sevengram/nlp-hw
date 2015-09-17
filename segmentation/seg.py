@@ -4,11 +4,12 @@ __email__ = 'jianxiang.fan@colorado.edu'
 import argparse
 import gzip
 
-missing_words = ['mentalist', 'espy', 'ipad', 'cuboulder', 'iphone6s', 'teaman']
+# Only use these when working with dev set
+dev_missing_words = ['mentalist', 'espy', 'ipad', 'cuboulder', 'iphone6s', 'teaman']
 
 
 class Segmenter:
-    def __init__(self, lexicon, split_words=None, extra_words=None, short_words=None):
+    def __init__(self, lexicon, core_lexicon=None, split_words=None, extra_words=None, short_words=None):
         """
         Create segmenter using certain lexicon
 
@@ -21,6 +22,7 @@ class Segmenter:
         self.word_max_len = max(len(w) for w in self.lexicon)
         self.split_words = split_words
         self.short_words = short_words
+        self.core_lexicon = core_lexicon or lexicon
 
     def match(self, text, base=None):
         """
@@ -73,7 +75,7 @@ class Segmenter:
         fl, br = 0, l
         front_stop, back_stop = False, False
         while fl < br:
-            if text[fl:br] in self.lexicon:
+            if text[fl:br] in self.core_lexicon:
                 front_result.append(text[fl:br])
                 break
             fr = min(fl + self.word_max_len, br if back_stop else l)
@@ -216,7 +218,7 @@ def gzopen(filename, mode):
         return open(filename, mode)
 
 
-def split_tokens(lexicon, refer_words, low_limit):
+def get_split_tokens(lexicon, refer_words, low_limit):
     """
     Split some strange combine tokens into common words, return split result dict
 
@@ -234,7 +236,7 @@ def split_tokens(lexicon, refer_words, low_limit):
     return result
 
 
-def common_short_words(lexicon, word_length, bound, extra=None):
+def get_common_short_words(lexicon, word_length, bound, extra=None):
     return [w for w in lexicon[:bound] if 1 < len(w) <= word_length] + (extra or ['a', 'i', 'u'])
 
 
@@ -248,13 +250,15 @@ if __name__ == '__main__':
                            type=str, default="data/bigwordlist.txt.gz", required=False)
     argparser.add_argument("--limit", help="Limit size of the lexicon",
                            type=int, default=75000, required=False)
+    argparser.add_argument("--core", help="Limit size of the core lexicon",
+                           type=int, default=2000, required=False)
     argparser.add_argument("--refer", help="Reference file",
                            type=str, required=False)
     argparser.add_argument("--bk", help="Use back max match", action='store_true')
     argparser.add_argument("--fb", help="Use frontback max match", action='store_true')
-    argparser.add_argument("--ew", help="Add extra words", action='store_true')
     argparser.add_argument("--sw", help="Short word check", action='store_true')
     argparser.add_argument("--st", help="Split combine tokens", action='store_true')
+    argparser.add_argument("--dev", help="Add extra words in dev mode", action='store_true')
     args = argparser.parse_args()
 
     clean_input = lambda s: s.decode(encoding='utf-8').strip(' \t\n\r#').lower() \
@@ -263,9 +267,10 @@ if __name__ == '__main__':
     with gzopen(args.lexicon, 'r') as f1, gzopen(args.target, 'r') as f2, open(args.output, 'w') as f3:
         lex = [clean_input(line).split('\t')[0] for line in f1][:args.limit]
         segmenter = Segmenter(lex,
-                              split_words=split_tokens(lex, lex[:50], 20000) if args.st else None,
-                              extra_words=missing_words if args.ew else None,
-                              short_words=common_short_words(lex, 2, 200) if args.sw else None)
+                              split_words=get_split_tokens(lex, lex[:50], 20000) if args.st else None,
+                              extra_words=dev_missing_words if args.dev else None,
+                              short_words=get_common_short_words(lex, 2, 200) if args.sw else None,
+                              core_lexicon=lex[:args.core])
 
         base_match = "frontback" if args.fb else "back" if args.bk else "front"
         seg_answers = (segmenter.match(clean_input(line), base_match) for line in f2)

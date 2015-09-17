@@ -7,8 +7,8 @@
 ```
 $ python seg.py --help
 usage: seg.py [-h] [--target TARGET] [--output OUTPUT] [--lexicon LEXICON]
-              [--limit LIMIT] [--refer REFER] [--bk] [--fb] [--ew] [--sw]
-              [--st]
+              [--limit LIMIT] [--core CORE] [--refer REFER] [--bk] [--fb]
+              [--sw] [--st] [--dev]
 
 optional arguments:
   -h, --help         show this help message and exit
@@ -16,12 +16,13 @@ optional arguments:
   --output OUTPUT    Output file
   --lexicon LEXICON  Lexicon file
   --limit LIMIT      Limit size of the lexicon
+  --core CORE        Limit size of the core lexicon
   --refer REFER      Reference file
-  --ew               Add extra words
   --bk               Use back max match
   --fb               Use frontback max match
   --sw               Short word check
   --st               Split combine tokens
+  --dev              Add extra words in dev mode
 ```
 
 ### Original lexicon
@@ -33,16 +34,17 @@ $ python seg.py --target=target_file --out=out_put_file --lexicon=lexicon_file
 ```
 WER of the dev set: 0.661224489796
 
-
-### Missing words in Lexicon (--ew)
-Sometimes the segmenter fails just because it misses some words appearing in the golden answers, such as 'iphone6s', 'cuboulder' etc. In order to show the **real** performance of the **algorithm and strategy**, I added these missing words when working on the dev set.
-
+### Missing words in Lexicon
+When working with the dev set, sometimes the segmenter fails just because it misses some words appearing in the answers, such as 'iphone6s', 'cuboulder' etc. Just in order to show the **real** performance of the **algorithm and strategy**, I added these missing words to the lexicon before making any other improvement.
+```
+$ python seg.py --target=target_file --out=out_put_file --lexicon=lexicon_file --dev
+```
 WER of the dev set: 0.464795918367
 
 ### Back MaxMatch (--bk)
 Start MaxMatch algorithm from the end of the string.
 ```
-$ python seg.py --target=target_file --out=out_put_file --lexicon=lexicon_file --ew --bk
+$ python seg.py --target=target_file --out=out_put_file --lexicon=lexicon_file --bk --dev
 ```
 WER of the dev set: 0.274362244897
 
@@ -50,14 +52,15 @@ WER of the dev set: 0.274362244897
 Use MaxMatch algorithm from the start and the end of a string at the same time. It should deal with the overlapped words. 
 
 *Pseudocode*
+**Step 1 is a very greedy check, and a smaller lexicon perform better in pratice. I use a core lexicon with 2,000 words.**
 ```
-def front_back_max_match(text, lexicon):
+def front_back_max_match(text, lexicon, core_lexicon):
     front_result = back_result = []
     front_stop = back_stop = False
     front_left = 0
     back_right = len(text)
     while front_left < back_right:
-        if (text[front_left:back_right] in lexicon):
+        if (text[front_left:back_right] in core_lexicon):  # Step 1
             add text[front_left:back_right] to front_result
             break
         if (not front_stop):
@@ -90,9 +93,9 @@ def front_back_max_match(text, lexicon):
     return (properly concat front_result and back_result)
 ```
 ```
-$ python seg.py --target=target_file --out=out_put_file --lexicon=lexicon_file --ew --fb
+$ python seg.py --target=target_file --out=out_put_file --lexicon=lexicon_file --fb --dev
 ```
-WER of the dev set: 0.170833333333
+WER of the dev set: 0.144047619048
 
 ### Short words recheck (--sw)
 Strange short words (length <= 2) are often the idicator of the segmentation error, such as 'yous noo ze you lose', 'there al hiphop'. 
@@ -115,9 +118,9 @@ def recheck_short_words(result):
     return result
 ```
 ```
-$ python seg.py --target=target_file --out=out_put_file --lexicon=lexicon_file --ew --fb --sw
+$ python seg.py --target=target_file --out=out_put_file --lexicon=lexicon_file --fb --sw --dev
 ```
-WER of the dev set: 0.145535714286
+WER of the dev set: 0.132142857143
 
 ### Split combined words (--st)
 There are some uncommon **combined** words in our lexion, such as 'ofthe', 'tobe', 'forthe', which will be figured out by MaxMatch algorithm and block those very common word pairs - 'of the', 'to be', 'for the'. Split these words are useful to improve the whole accuracy in pratice.
@@ -126,6 +129,6 @@ There are some uncommon **combined** words in our lexion, such as 'ofthe', 'tobe
 > {'ifas': ['if', 'as'], 'allis': ['all', 'is'], 'andthe': ['and', 'the'], 'oris': ['or', 'is'], 'nosearch': ['no', 'search'], 'tobe': ['to', 'be'], 'newby': ['new', 'by'], 'inone': ['in', 'one'], 'anand': ['an', 'and'], 'orin': ['or', 'in'], 'canis': ['can', 'is'], 'inno': ['in', 'no'], 'ordo': ['or', 'do'], 'fromthe': ['from', 'the'], 'allin': ['all', 'in'], 'onus': ['on', 'us'], 'canto': ['can', 'to'], 'asif': ['as', 'if'], 'toto': ['to', 'to'], 'tothe': ['to', 'the'], 'atto': ['at', 'to'], 'anno': ['an', 'no'], 'forthe': ['for', 'the'], 'atis': ['at', 'is'], 'andnot': ['and', 'not'], 'noor': ['no', 'or'], 'beit': ['be', 'it'], 'aboutus': ['about', 'us'], 'inthe': ['in', 'the'], 'asis': ['as', 'is'], 'bein': ['be', 'in'], 'canmore': ['can', 'more'], 'anus': ['an', 'us'], 'ofthe': ['of', 'the'], 'usno': ['us', 'no'], 'wean': ['we', 'an'], 'doin': ['do', 'in'], 'weis': ['we', 'is'], 'doit': ['do', 'it'], 'wein': ['we', 'in'], 'doan': ['do', 'an'], 'weare': ['we', 'are'], 'itat': ['it', 'at'], 'dois': ['do', 'is'], 'doon': ['do', 'on'], 'bythe': ['by', 'the'], 'infor': ['in', 'for'], 'isas': ['is', 'as'], 'onthe': ['on', 'the'], 'bebe': ['be', 'be'], 'tomy': ['to', 'my'], 'anat': ['an', 'at'], 'theor': ['the', 'or'], 'onetime': ['one', 'time'], 'anas': ['an', 'as'], 'befor': ['be', 'for'], 'nono': ['no', 'no'], 'canby': ['can', 'by'], 'noone': ['no', 'one'], 'dodo': ['do', 'do'], 'forno': ['for', 'no'], 'hasan': ['has', 'an'], 'onan': ['on', 'an'], 'moreno': ['more', 'no'], 'toit': ['to', 'it'], 'nowe': ['no', 'we'], 'forall': ['for', 'all'], 'isin': ['is', 'in'], 'otherother': ['other', 'other'], 'itis': ['it', 'is'], 'homehome': ['home', 'home'], 'oran': ['or', 'an'], 'beall': ['be', 'all']}
 
 ```
-$ python seg.py --target=target_file --out=out_put_file --lexicon=lexicon_file --ew --fb --sw --st
+$ python seg.py --target=target_file --out=out_put_file --lexicon=lexicon_file --fb --sw --st --dev
 ```
-WER of the dev set: 0.105654761905
+WER of the dev set: 0.0922619047619
