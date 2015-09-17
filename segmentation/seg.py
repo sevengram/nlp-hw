@@ -258,7 +258,7 @@ if __name__ == '__main__':
     argparser.add_argument("--fb", help="Use frontback max match", action='store_true')
     argparser.add_argument("--sw", help="Short word check", action='store_true')
     argparser.add_argument("--st", help="Split combine tokens", action='store_true')
-    argparser.add_argument("--dev", help="Add extra words in dev mode", action='store_true')
+    argparser.add_argument("--dev", help="Dev mode, add extra words", action='store_true')
     args = argparser.parse_args()
 
     clean_input = lambda s: s.decode(encoding='utf-8').strip(' \t\n\r#').lower() \

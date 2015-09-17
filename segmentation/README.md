@@ -22,7 +22,7 @@ optional arguments:
   --fb               Use frontback max match
   --sw               Short word check
   --st               Split combine tokens
-  --dev              Add extra words in dev mode
+  --dev              Dev mode, add extra words
 ```
 
 ### Original lexicon
@@ -34,7 +34,7 @@ $ python seg.py --target=tf --out=opf --lexicon=lf
 ```
 WER of the dev set: 0.661224489796
 
-### Missing words in Lexicon
+### Missing words in lexicon (--dev)
 When working with the dev set, sometimes the segmenter fails just because it misses some words appearing in the answers, such as 'iphone6s', 'cuboulder' etc. Just in order to show the **real** performance of the **algorithm and strategy**, I added these missing words to the lexicon before making any other improvement.
 ```
 $ python seg.py --target=tf --out=opf --lexicon=lf --dev
