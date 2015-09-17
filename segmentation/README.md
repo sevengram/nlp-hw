@@ -64,9 +64,11 @@ def front_back_max_match(text, lexicon, core_lexicon):
             add text[front_left:back_right] to front_result
             break
         if (not front_stop):
-            do front-max-match(left_bound = front_left, right_bound = back_stop ? back_right : len(text))
+            do front-max-match(left_bound = front_left, \
+                right_bound = back_stop ? back_right : len(text))
         if (not back_stop):
-            do back-max-match(left_bound = front_stop ? front_left : 0, right_bound = back_right)
+            do back-max-match(left_bound = front_stop ? front_left : 0, \
+                right_bound = back_right)
         front_word = back_word = ''
         if (find both front_word and back_word and two words don't overlap):
             add front_word to front_result
