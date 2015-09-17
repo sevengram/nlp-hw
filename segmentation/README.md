@@ -34,7 +34,7 @@ $ python seg.py --target=tf --out=opf --lexicon=lf
 ```
 WER of the dev set: 0.661224489796
 
-### Missing words in lexicon (--dev)
+### Missing words in lexicon (Only for dev mode) (--dev)
 When working with the dev set, sometimes the segmenter fails just because it misses some words appearing in the answers, such as 'iphone6s', 'cuboulder' etc. Just in order to show the **real** performance of the **algorithm and strategy**, I added these missing words to the lexicon before making any other improvement.
 ```
 $ python seg.py --target=tf --out=opf --lexicon=lf --dev
