@@ -30,21 +30,21 @@ First 75,000 most frequent words from a Google-derived list
 
 ### Default MaxMatch
 ```
-$ python seg.py --target=target_file --out=out_put_file --lexicon=lexicon_file
+$ python seg.py --target=tf --out=opf --lexicon=lf
 ```
 WER of the dev set: 0.661224489796
 
 ### Missing words in Lexicon
 When working with the dev set, sometimes the segmenter fails just because it misses some words appearing in the answers, such as 'iphone6s', 'cuboulder' etc. Just in order to show the **real** performance of the **algorithm and strategy**, I added these missing words to the lexicon before making any other improvement.
 ```
-$ python seg.py --target=target_file --out=out_put_file --lexicon=lexicon_file --dev
+$ python seg.py --target=tf --out=opf --lexicon=lf --dev
 ```
 WER of the dev set: 0.464795918367
 
 ### Back MaxMatch (--bk)
 Start MaxMatch algorithm from the end of the string.
 ```
-$ python seg.py --target=target_file --out=out_put_file --lexicon=lexicon_file --bk --dev
+$ python seg.py --target=tf --out=opf --lexicon=lf --bk --dev
 ```
 WER of the dev set: 0.274362244897
 
@@ -93,7 +93,7 @@ def front_back_max_match(text, lexicon, core_lexicon):
     return (properly concat front_result and back_result)
 ```
 ```
-$ python seg.py --target=target_file --out=out_put_file --lexicon=lexicon_file --fb --dev
+$ python seg.py --target=tf --out=opf --lexicon=lf --fb --dev
 ```
 WER of the dev set: 0.144047619048
 
@@ -118,7 +118,7 @@ def recheck_short_words(result):
     return result
 ```
 ```
-$ python seg.py --target=target_file --out=out_put_file --lexicon=lexicon_file --fb --sw --dev
+$ python seg.py --target=tf --out=opf --lexicon=lf --fb --sw --dev
 ```
 WER of the dev set: 0.132142857143
 
@@ -129,6 +129,6 @@ There are some uncommon **combined** words in our lexion, such as 'ofthe', 'tobe
 > {'ifas': ['if', 'as'], 'allis': ['all', 'is'], 'andthe': ['and', 'the'], 'oris': ['or', 'is'], 'nosearch': ['no', 'search'], 'tobe': ['to', 'be'], 'newby': ['new', 'by'], 'inone': ['in', 'one'], 'anand': ['an', 'and'], 'orin': ['or', 'in'], 'canis': ['can', 'is'], 'inno': ['in', 'no'], 'ordo': ['or', 'do'], 'fromthe': ['from', 'the'], 'allin': ['all', 'in'], 'onus': ['on', 'us'], 'canto': ['can', 'to'], 'asif': ['as', 'if'], 'toto': ['to', 'to'], 'tothe': ['to', 'the'], 'atto': ['at', 'to'], 'anno': ['an', 'no'], 'forthe': ['for', 'the'], 'atis': ['at', 'is'], 'andnot': ['and', 'not'], 'noor': ['no', 'or'], 'beit': ['be', 'it'], 'aboutus': ['about', 'us'], 'inthe': ['in', 'the'], 'asis': ['as', 'is'], 'bein': ['be', 'in'], 'canmore': ['can', 'more'], 'anus': ['an', 'us'], 'ofthe': ['of', 'the'], 'usno': ['us', 'no'], 'wean': ['we', 'an'], 'doin': ['do', 'in'], 'weis': ['we', 'is'], 'doit': ['do', 'it'], 'wein': ['we', 'in'], 'doan': ['do', 'an'], 'weare': ['we', 'are'], 'itat': ['it', 'at'], 'dois': ['do', 'is'], 'doon': ['do', 'on'], 'bythe': ['by', 'the'], 'infor': ['in', 'for'], 'isas': ['is', 'as'], 'onthe': ['on', 'the'], 'bebe': ['be', 'be'], 'tomy': ['to', 'my'], 'anat': ['an', 'at'], 'theor': ['the', 'or'], 'onetime': ['one', 'time'], 'anas': ['an', 'as'], 'befor': ['be', 'for'], 'nono': ['no', 'no'], 'canby': ['can', 'by'], 'noone': ['no', 'one'], 'dodo': ['do', 'do'], 'forno': ['for', 'no'], 'hasan': ['has', 'an'], 'onan': ['on', 'an'], 'moreno': ['more', 'no'], 'toit': ['to', 'it'], 'nowe': ['no', 'we'], 'forall': ['for', 'all'], 'isin': ['is', 'in'], 'otherother': ['other', 'other'], 'itis': ['it', 'is'], 'homehome': ['home', 'home'], 'oran': ['or', 'an'], 'beall': ['be', 'all']}
 
 ```
-$ python seg.py --target=target_file --out=out_put_file --lexicon=lexicon_file --fb --sw --st --dev
+$ python seg.py --target=tf --out=opf --lexicon=lf --fb --sw --st --dev
 ```
 WER of the dev set: 0.0922619047619
