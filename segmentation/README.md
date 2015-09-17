@@ -52,6 +52,7 @@ WER of the dev set: 0.274362244897
 Use MaxMatch algorithm from the start and the end of a string at the same time. It should deal with the overlapped words. 
 
 *Pseudocode*
+
 **Step 1 is a very greedy check, and a smaller lexicon perform better in pratice. I use a core lexicon with 2,000 words.**
 ```
 def front_back_max_match(text, lexicon, core_lexicon):
