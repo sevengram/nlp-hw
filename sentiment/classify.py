@@ -33,7 +33,7 @@ def load_dataset(path, label=None, k=0):
 
 
 class Classifier(object):
-    def __init__(self, top_trunk=20, lower_bound=1):
+    def __init__(self):
         self.doc_counts = {}
         self.word_counts = {}
         self.pos_counts = {}
@@ -42,8 +42,6 @@ class Classifier(object):
         self.pos_likelihood = {}
         self.neg_likelihood = {}
         self.effective_words = None
-        self.lower_bound = lower_bound
-        self.top_trunk = top_trunk
 
     def clear(self):
         self.doc_counts.clear()
@@ -132,10 +130,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     classifier = Classifier()
-    pos_set = load_dataset(args.pos, label=1, k=args.k)
-    neg_set = load_dataset(args.neg, label=0, k=args.k)
     error_count, test_count = 0, 0
     if args.k != 0:
+        pos_set = load_dataset(args.pos, label=1, k=args.k)
+        neg_set = load_dataset(args.neg, label=0, k=args.k)
         for ii in range(args.k):
             classifier.clear()
             pos_train_set, pos_dev_set = pos_set.next()
@@ -151,6 +149,8 @@ if __name__ == '__main__':
                 error_count += classifier.classify(t)
         print(1 - float(error_count) / test_count)
     else:
+        pos_set = load_dataset(args.pos, label=1)
+        neg_set = load_dataset(args.neg, label=0)
         classifier.fit_on_texts(pos_set.next())
         classifier.fit_on_texts(neg_set.next())
         classifier.compute_prior()
